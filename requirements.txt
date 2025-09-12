@@ -1,6 +1,7 @@
-streamlit
-pandas
-numpy
-matplotlib
 requests
-streamlit-autorefresh
+pandas
+matplotlib
+numpy
+seaborn
+scipy
+streamlit
