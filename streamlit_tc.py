@@ -109,6 +109,11 @@ df, volatility = enrich_indicators(base_df.copy())
 st.sidebar.header("Filtros")
 min_date, max_date = df["date"].min().date(), df["date"].max().date()
 
+# Botón de actualización manual
+if st.sidebar.button("Actualizar ahora"):
+    fetch_data.clear()   # limpia la cache de esa función
+    st.rerun()           # vuelve a ejecutar la app
+
 # Rango de fechas para visualizar (no altera los cálculos originales; solo filtra lo mostrado)
 selected_range = st.sidebar.date_input(
     "Rango de fechas",
