@@ -107,8 +107,8 @@ df, volatility = enrich_indicators(base_df.copy())
 # 4) Sidebar (filtros y opciones)
 # -------------------------
 # Botón de actualización manual
-st.sidebar.header("Actulizar Dashboard")
-if st.sidebar.button("Actualizar ahora"):
+st.sidebar.header("Menú")
+if st.sidebar.button("Actualizar Datos del Dashboard"):
     fetch_data.clear()   # limpia la cache de esa función
     st.rerun()           # vuelve a ejecutar la app
     
