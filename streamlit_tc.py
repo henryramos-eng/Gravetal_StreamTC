@@ -73,7 +73,7 @@ def fetch_data() -> pd.DataFrame:
 
 def enrich_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # Tendencia lineal (regresión sobre timestamps en segundos)
-    timestamps = (df["date"].view("int64") // 10**9).astype(float)
+    timestamps = (df["date"].astype("int64") // 10**9).astype(float)
     slope, intercept, r_value, p_value, std_err = linregress(timestamps, df["avg_price"])
     df["trend"] = intercept + slope * timestamps
 
@@ -181,28 +181,28 @@ with st.container():
 # -------------------------
 # 7) Gráfico 2: Volatilidad diaria (retorno log)
 # -------------------------
-with st.container():
-    st.subheader("Volatilidad diaria (retorno logarítmico)")
-    fig2, ax2 = plt.subplots(figsize=(12, 3.8))
-    sns.lineplot(x="date", y="log_return", data=df_view, ax=ax2)
-    ax2.set_xlabel("Fecha"); ax2.set_ylabel("Log Return")
-    ax2.grid(True, alpha=0.3)
-    fig2.tight_layout()
-    st.pyplot(fig2)
+    with st.container():
+        st.subheader("Volatilidad diaria (retorno logarítmico)")
+        fig2, ax2 = plt.subplots(figsize=(12, 3.8))
+        sns.lineplot(x="date", y="log_return", data=df_view, ax=ax2)
+        ax2.set_xlabel("Fecha"); ax2.set_ylabel("Log Return")
+        ax2.grid(True, alpha=0.3)
+        fig2.tight_layout()
+        st.pyplot(fig2)
 
 # -------------------------
 # 8) Gráfico 3: RSI (14)
 # -------------------------
-with st.container():
-    st.subheader("RSI (14) con zonas 70/30")
-    fig3, ax3 = plt.subplots(figsize=(12, 3.8))
-    ax3.plot(df_view["date"], df_view["RSI14"], label="RSI (14)")
-    ax3.axhline(70, linestyle="--", linewidth=1)
-    ax3.axhline(30, linestyle="--", linewidth=1)
-    ax3.set_xlabel("Fecha"); ax3.set_ylabel("RSI")
-    ax3.grid(True, alpha=0.3)
-    fig3.tight_layout()
-    st.pyplot(fig3)
+    with st.container():
+        st.subheader("RSI (14) con zonas 70/30")
+        fig3, ax3 = plt.subplots(figsize=(12, 3.8))
+        ax3.plot(df_view["date"], df_view["RSI14"], label="RSI (14)")
+        ax3.axhline(70, linestyle="--", linewidth=1)
+        ax3.axhline(30, linestyle="--", linewidth=1)
+        ax3.set_xlabel("Fecha"); ax3.set_ylabel("RSI")
+        ax3.grid(True, alpha=0.3)
+        fig3.tight_layout()
+        st.pyplot(fig3)
 
 # -------------------------
 # 9) Tabla
