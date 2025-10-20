@@ -6,7 +6,7 @@ Dashboard Streamlit: Análisis de tipo de cambio paralelo (BOB/USD)
 - Calcula EMAs (20/50/200) y RSI(14)
 - Grafica: Precio+Tendencia+EMAs, Volatilidad y RSI
 
-Nota: Mantiene la lógica de tu script original sin alterar los cálculos.
+Nota: Mantiene la lógica original; solo se ajusta render para evitar problemas de gráficos.
 """
 
 import io
@@ -14,7 +14,7 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+# import seaborn as sns  # (opcional) ya no lo usamos en el gráfico 2
 from scipy.stats import linregress
 import streamlit as st
 
@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # -------------------------
-# 1) Funciones de indicadores (idénticas en esencia a tu script)
+# 1) Funciones de indicadores
 # -------------------------
 def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     """RSI estilo Wilder usando medias móviles exponenciales (EWMA). 0-100."""
@@ -64,8 +64,10 @@ def fetch_data() -> pd.DataFrame:
     for col in ["buy_average_price", "sell_average_price"]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df = df.dropna(subset=["date", "buy_average_price", "sell_average_price"])\
-           .sort_values("date")
+    df = (
+        df.dropna(subset=["date", "buy_average_price", "sell_average_price"])
+          .sort_values("date")
+    )
     # Precio promedio diario
     df["avg_price"] = df[["buy_average_price", "sell_average_price"]].mean(axis=1)
     return df
@@ -106,7 +108,6 @@ df, volatility = enrich_indicators(base_df.copy())
 # -------------------------
 # 4) Sidebar (filtros y opciones)
 # -------------------------
-# Botón de actualización manual
 st.sidebar.header("Menú")
 if st.sidebar.button("Actualizar Datos"):
     fetch_data.clear()   # limpia la cache de esa función
@@ -115,7 +116,7 @@ if st.sidebar.button("Actualizar Datos"):
 st.sidebar.header("Filtros")
 min_date, max_date = df["date"].min().date(), df["date"].max().date()
 
-# Rango de fechas para visualizar (no altera los cálculos originales; solo filtra lo mostrado)
+# Rango de fechas para visualizar (solo filtra lo mostrado)
 selected_range = st.sidebar.date_input(
     "Rango de fechas",
     (max_date.replace(year=max_date.year-1) if (max_date.year - min_date.year) >= 1 else min_date, max_date),
@@ -134,7 +135,7 @@ df_view = df.loc[mask].copy()
 st.sidebar.markdown("---")
 show_table = st.sidebar.checkbox("Mostrar tabla de datos", value=False)
 
-# Descargar CSV con indicadores
+# Descargar CSV con indicadores (completo)
 csv_buf = io.StringIO()
 df.to_csv(csv_buf, index=False)
 st.sidebar.download_button(
@@ -176,33 +177,33 @@ with st.container():
     ax1.set_xlabel("Fecha"); ax1.set_ylabel("Tipo de cambio")
     ax1.grid(True, alpha=0.3); ax1.legend(loc="best")
     fig1.tight_layout()
-    st.pyplot(fig1)
+    st.pyplot(fig1); plt.close(fig1)
 
 # -------------------------
 # 7) Gráfico 2: Volatilidad diaria (retorno log)
 # -------------------------
-    with st.container():
-        st.subheader("Volatilidad diaria (retorno logarítmico)")
-        fig2, ax2 = plt.subplots(figsize=(12, 3.8))
-        sns.lineplot(x="date", y="log_return", data=df_view, ax=ax2)
-        ax2.set_xlabel("Fecha"); ax2.set_ylabel("Log Return")
-        ax2.grid(True, alpha=0.3)
-        fig2.tight_layout()
-        st.pyplot(fig2)
+with st.container():
+    st.subheader("Volatilidad diaria (retorno logarítmico)")
+    fig2, ax2 = plt.subplots(figsize=(12, 3.8))
+    ax2.plot(df_view["date"], df_view["log_return"])
+    ax2.set_xlabel("Fecha"); ax2.set_ylabel("Log Return")
+    ax2.grid(True, alpha=0.3)
+    fig2.tight_layout()
+    st.pyplot(fig2); plt.close(fig2)
 
 # -------------------------
 # 8) Gráfico 3: RSI (14)
 # -------------------------
-    with st.container():
-        st.subheader("RSI (14) con zonas 70/30")
-        fig3, ax3 = plt.subplots(figsize=(12, 3.8))
-        ax3.plot(df_view["date"], df_view["RSI14"], label="RSI (14)")
-        ax3.axhline(70, linestyle="--", linewidth=1)
-        ax3.axhline(30, linestyle="--", linewidth=1)
-        ax3.set_xlabel("Fecha"); ax3.set_ylabel("RSI")
-        ax3.grid(True, alpha=0.3)
-        fig3.tight_layout()
-        st.pyplot(fig3)
+with st.container():
+    st.subheader("RSI (14) con zonas 70/30")
+    fig3, ax3 = plt.subplots(figsize=(12, 3.8))
+    ax3.plot(df_view["date"], df_view["RSI14"], label="RSI (14)")
+    ax3.axhline(70, linestyle="--", linewidth=1)
+    ax3.axhline(30, linestyle="--", linewidth=1)
+    ax3.set_xlabel("Fecha"); ax3.set_ylabel("RSI")
+    ax3.grid(True, alpha=0.3)
+    fig3.tight_layout()
+    st.pyplot(fig3); plt.close(fig3)
 
 # -------------------------
 # 9) Tabla
